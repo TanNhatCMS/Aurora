@@ -3,10 +3,9 @@
 </p>
 <h1 align="center">Aurora Launcher</h1>
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/Daturaxoxo/Aurora?color=007ec6" alt="Release" />
-  <img src="https://img.shields.io/github/v/release/Daturaxoxo/Aurora?include_prereleases&color=007ec6" alt="Nightly" />
-  <img src="https://img.shields.io/github/downloads/Daturaxoxo/Aurora/total?color=2ea44f" alt="Downloads" />
-  <img src="https://img.shields.io/github/contributors/Daturaxoxo/Aurora?color=dfb317" alt="Contributors" />
+  <img src="https://img.shields.io/github/v/release/Daturaxoxo/Aurora?include_prereleases&color=007ec6&v=1" alt="Release" />
+  <img src="https://img.shields.io/github/downloads/Daturaxoxo/Aurora/total?color=2ea44f&v=1" alt="Downloads" />
+  <img src="https://img.shields.io/github/contributors/Daturaxoxo/Aurora?color=dfb317&v=1" alt="Contributors" />
 </p>
 
 > [!NOTE]
