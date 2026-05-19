@@ -27,9 +27,18 @@
     "no_drive_line": "隐藏行车线",
     "no_drive_line_desc": "去掉开车时显示的 3D GPS 导航线。 (鸣谢： Rokkudayo)",
     "search_mods": "搜索本地模组...",
+    "mod_manager": "模组管理器",
+    "mod_manager_desc_a": "/",
+    "mod_manager_desc_b": "已启用",
     "mod_manager_unknown": "未知",
     "mod_manager_author": "作者：",
     "mod_manager_restart": "重新启动",
     "discord_rpc": "Discord RPC",
-    "discord_rpc_desc": "切换内置 Discord RPC"
+    "discord_rpc_desc": "切换内置 Discord RPC",
+    "update_available_title": "有可用更新",
+    "update_current_version": "当前版本",
+    "update_new_version": "新版本",
+    "update_available_message_a": "Aurora Launcher 有新版本可用！",
+    "update_available_message_b": "是否打开 GitHub 并下载最新更新？",
+    "update_available_confirm": "在浏览器中打开"
 }
