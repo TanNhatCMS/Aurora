@@ -104,3 +104,11 @@ def get_game_directory():
         "User will need to set the path manually via Settings."
     )
     return None
+
+def get_local_version() -> str:
+    base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.abspath(".")
+    version_file = Path(base_path) / "dev" / "VERSION"
+    
+    if version_file.exists():
+        return version_file.read_text().strip()
+    return "0.0.0"
