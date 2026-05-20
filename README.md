@@ -54,9 +54,22 @@ Aurora is an open-source community project, any help with the source code is gre
 > In order to build the project, you must have [Python 3.14.5](https://www.python.org/downloads/release/python-3145/) and [VCRedist](https://aka.ms/vs/17/release/vc_redist.x64.exe) installed on your computer.
 1. Download the ZIP source code of this project. **(Code Button > "Download ZIP")**
 2. Extract source code to your desired path.
-3. Open a command prompt in the root folder of the project **(the one that houses build.py and main.py)**
-4. Run `pip install -r dev/requirements.txt`
-5. Run `python build.py` or `py build.py`
+3. Open a command prompt in the root folder of the project **(the one that houses `build.py` and `main.py`)**
+4. Create and activate a virtual environment *(recommended)*:
+   ```bash
+   uv venv
+   .venv\Scripts\activate
+   ```
+5. Install dependencies:
+   ```bash
+   uv pip install -r dev/requirements.txt
+   ```
+6. Build the executable:
+   ```bash
+   python build.py
+   ```
+> [!TIP]
+> After you're done, deactivate the virtual environment with `deactivate`.
 ### ᅠ
 ## Mod Implementation to Aurora
 > [!NOTE]

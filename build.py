@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import zipfile
 from datetime import datetime
 
@@ -29,7 +30,7 @@ def run_build():
             print(f"Cleared {folder}")
 
     build_cmd = [
-        "python", "-m", "PyInstaller",
+        sys.executable, "-m", "PyInstaller",
         "--noconfirm",
         "--onefile",
         "--windowed",
@@ -45,9 +46,15 @@ def run_build():
         f"--add-data=Bin/cutils.dll{SEP}Bin",
         f"--add-data=Bin/Builtins{SEP}Bin/Builtins",
         f"--add-data=Lang{SEP}Lang",
-         f"--add-data=dev/VERSION{SEP}dev",
+        f"--add-data=dev/VERSION{SEP}dev",
         "--hidden-import=psutil",
         "--hidden-import=psutil._pswindows",
+        "--hidden-import=pkgutil",
+        "--hidden-import=PyQt6",
+        "--hidden-import=PyQt6.QtCore",
+        "--hidden-import=PyQt6.QtGui",
+        "--hidden-import=PyQt6.QtWidgets",
+        "--collect-binaries=PyQt6",
         "--python-option=u",
         MAIN_SCRIPT
     ]

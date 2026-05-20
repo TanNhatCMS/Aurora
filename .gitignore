@@ -1,0 +1,6 @@
+/dist
+/build
+*.zip
+*.spec
+.deepseek/instructions.md
+*.pyc

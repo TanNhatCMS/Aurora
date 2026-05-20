@@ -38,6 +38,12 @@ def run_as_admin():
     sys.exit(0)
 
 def main():
+    # On first run (no config.json yet), auto-detect the system language
+    # so the UI starts in the user's native language instead of English.
+    if not os.path.exists(cfg.CONFIG_FILE):
+        detected = cfg.detect_system_language()
+        cfg.set_language(detected)
+
     app = QApplication(sys.argv)
     initial_path = get_game_directory()
 

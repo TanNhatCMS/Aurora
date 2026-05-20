@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import ctypes
 
 LANG_CODES = {
     "English":  "en",
@@ -13,6 +14,31 @@ LANG_CODES = {
 }
 # Reverse map: code -> display name
 LANG_NAMES = {v: k for k, v in LANG_CODES.items()}
+
+# Map Windows primary language IDs to Aurora language codes
+_PRIMARY_LANG_TO_AURORA = {
+    0x09: "en",   # English
+    0x07: "de",   # German
+    0x0A: "es",   # Spanish
+    0x1F: "tr",   # Turkish
+    0x2A: "vi",   # Vietnamese
+    0x04: "cn",   # Chinese
+    0x11: "jp",   # Japanese
+}
+
+def detect_system_language() -> str:
+    """Detect the Windows display language and return the matching Aurora
+    language code. Falls back to 'en' if detection fails or the language
+    isn't supported."""
+    try:
+        # GetUserDefaultUILanguage returns the LANGID of the current user's
+        # display language (e.g. 0x0409 for en-US, 0x042a for vi-VN).
+        lang_id = ctypes.windll.kernel32.GetUserDefaultUILanguage()
+        # Extract the primary language ID (low 10 bits)
+        primary = lang_id & 0x03FF
+        return _PRIMARY_LANG_TO_AURORA.get(primary, "en")
+    except Exception:
+        return "en"
 
 DEFAULTS = {
     "game_path":    "",

@@ -640,6 +640,14 @@ class SettingsOverlay(QFrame):
             main_ui = self.parent().parent()
             main_ui.current_path = folder
             cfg.set_game_path(folder)
+            # Re-initialize engine with new path
+            if validate_path(folder):
+                from src.engine import AuroraEngine
+                main_ui.engine = AuroraEngine(
+                    folder,
+                    censorship_removal=cfg.get_censorship_removal(),
+                    no_drive_line=cfg.get_no_drive_line(),
+                )
             main_ui.refresh_launch_state()
 
     def _toggle_cr_mode(self, new_state):
