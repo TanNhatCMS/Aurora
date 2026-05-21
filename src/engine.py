@@ -290,6 +290,8 @@ class AuroraEngine:
             if launcher_running:
                 if not launcher_ever_seen:
                     logger.info("NTE Launcher was detected for the first time.", extra={'el': True})
+                    if callable(getattr(self, 'on_launcher_detected', None)):
+                        self.on_launcher_detected()
                 elif launcher_missing_seconds > 0:
                     logger.info("NTE Launcher activity re-detected. Resetting grace tracker.", extra={'el': True})
                 launcher_ever_seen = True

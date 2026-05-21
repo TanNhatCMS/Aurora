@@ -7,10 +7,10 @@ from src.utils import resource_path
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QFrame, QGraphicsOpacityEffect, 
+    QPushButton, QLabel, QFrame, QGraphicsOpacityEffect, QSystemTrayIcon, QMenu
 )
 from PyQt6.QtCore import Qt, QSize, QThread, QPoint, QTimer, QPropertyAnimation, pyqtSignal
-from PyQt6.QtGui import QPixmap, QIcon, QPainter
+from PyQt6.QtGui import QPixmap, QIcon, QPainter, QAction
 from src.logger import logger, dev_console_handler
 from src.path_finder import validate_path, get_game_directory, get_local_version
 from src.styles import MAIN_STYLE
@@ -18,7 +18,6 @@ from src import config_manager as cfg
 from src.translator import Translator, t
 from src.engine import get_app_dir
 from src.mod_manager import ModManager
-
 from src.ui.elements import PopupDialog
 from src.ui.settings import SettingsOverlay
 from src.utils import GetOnlineVersion, parse_version
@@ -31,6 +30,7 @@ from src.ui.mod_manager import ModManagerOverlay
 class GameMonitorThread(QThread):
     game_started = pyqtSignal()  # emitted the moment HTGame.exe is detected
     access_denied = pyqtSignal() # emitted when AV/UAC blocks a file operation (or if the user somehow ran it without Administrator priviledges)
+    launcher_detected = pyqtSignal() 
 
     def __init__(self, engine):
         super().__init__()
@@ -46,7 +46,7 @@ class GameMonitorThread(QThread):
                 launcher_path = self.engine.game_path / "NTEGlobalLauncher.exe"
                 logger.info("Launcher started, waiting for manual game start. (HTGame.exe)", extra={"el": True})
                 subprocess.Popen([str(launcher_path)], cwd=str(self.engine.game_path))
-                # Patch monitor_game to signal us when the game actually starts
+                self.engine.on_launcher_detected = lambda: self.launcher_detected.emit()  # <-- ADD
                 self.engine.on_game_started = lambda: self.game_started.emit()
                 self.engine.monitor_game()
                 logger.info("Session was ended successfully.")
@@ -72,7 +72,7 @@ class AuroraOverlayWindow(QWidget):
     DISPLAY_MS = 6000
     FADE_MS    = 1000
 
-    def __init__(self):
+    def __init__(self, title="Aurora Mod Loader", subtitle="Mods are active"):
         super().__init__(None)
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint |
@@ -99,7 +99,7 @@ class AuroraOverlayWindow(QWidget):
         text_col.setSpacing(1)
         text_col.addStretch()
 
-        lbl_title = QLabel("Aurora Mod Loader")
+        lbl_title = QLabel(title)
         lbl_title.setStyleSheet("""
             color: #E0E0E0; 
             font-size: 14px; 
@@ -107,7 +107,7 @@ class AuroraOverlayWindow(QWidget):
             font-family: 'Segoe UI', system-ui, sans-serif;
         """)
 
-        lbl_sub = QLabel("Mods are active")
+        lbl_sub = QLabel(subtitle)
         lbl_sub.setStyleSheet("""
             color: #AAAAAA; 
             font-size: 12px;
@@ -247,6 +247,14 @@ class AuroraUI(QMainWindow):
 
         self.check_for_updates()
         self.refresh_launch_state()
+
+        self._tray = QSystemTrayIcon(QIcon(resource_path("Bin/Assets/logo.ico")), self)
+        tray_menu = QMenu()
+        restore_action = QAction("Open Aurora", self)
+        restore_action.triggered.connect(self._restore_from_tray)
+        tray_menu.addAction(restore_action)
+        self._tray.setContextMenu(tray_menu)
+        self._tray.activated.connect(self._on_tray_activated)
 
     # Translation
     def retranslate_ui(self):
@@ -512,7 +520,9 @@ class AuroraUI(QMainWindow):
         self.monitor_thread = GameMonitorThread(self.engine)
         self.monitor_thread.finished.connect(self.refresh_launch_state)
         self.monitor_thread.finished.connect(lambda: setattr(self, 'monitor_thread', None))
+        self.monitor_thread.finished.connect(self._on_session_ended)
         self.monitor_thread.game_started.connect(self._show_game_overlay)
+        self.monitor_thread.launcher_detected.connect(self._send_to_tray)
         self.monitor_thread.access_denied.connect(self._show_access_denied_popup)
         self.monitor_thread.start()
 
@@ -620,12 +630,35 @@ class AuroraUI(QMainWindow):
 
     # WINDOW CHROME
     def closeEvent(self, event):
-        # Guard: stop the overlay poll timer if Aurora is closed while the
-        # game is still loading, to prevent the timer firing on a destroyed object.
         if hasattr(self, '_poll_timer') and self._poll_timer is not None:
             self._poll_timer.stop()
+        if hasattr(self, '_tray'):
+            self._tray.hide()
         logger.info("Aurora was closed normally by the user.")
         event.accept()
+
+    def _send_to_tray(self):
+        self._tray.show()
+        self.hide()
+        self._overlay_win = AuroraOverlayWindow(
+            title="Aurora Mod Loader",
+            subtitle="Minimised to tray"
+        )
+        self._overlay_win.show_over_game()
+
+    def _restore_from_tray(self):
+        self._tray.hide()
+        self.showNormal()
+        self.activateWindow()
+        self.raise_()
+
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self._restore_from_tray()
+
+    def _on_session_ended(self):
+        self._restore_from_tray()
+        logger.info("Session ended, Aurora restored from tray.", extra={"el": True})
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
