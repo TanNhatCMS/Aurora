@@ -1,6 +1,12 @@
-/dist
+# Created by Aurora at runtime
+config.json
+/Mods
+/Logs
+__pycache__
+
+# Build Artifacts
 /build
-*.zip
+/dist
 *.spec
 .deepseek/instructions.md
-*.pyc
+*.zip

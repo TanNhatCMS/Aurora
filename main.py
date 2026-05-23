@@ -1,11 +1,9 @@
 import sys
 import ctypes
 import traceback
-import os
 from PyQt6.QtWidgets import QApplication
 from src.ui_main import AuroraUI
 from src.engine import AuroraEngine
-from src.utils import resource_path
 from src.path_finder import get_game_directory
 from src import config_manager as cfg
 from src.discord_rpc import DiscordRPC
@@ -49,12 +47,12 @@ def main():
 
     engine = AuroraEngine(
         initial_path,
-        censorship_removal=cfg.get_censorship_removal(),
-        no_drive_line=cfg.get_no_drive_line(),
+        censorship_removal=cfg.get(cfg.Key.CENSORSHIP_REMOVE),
+        no_drive_line=cfg.get(cfg.Key.NO_DRIVE_LINE)
     ) if initial_path else None
     window = AuroraUI(engine, initial_path)
 
-    if cfg.get_discord_rpc():
+    if cfg.get(cfg.Key.DISCORD_RPC):
         window.rpc = DiscordRPC()
         window.rpc.set_idle()
         window.rpc.start()

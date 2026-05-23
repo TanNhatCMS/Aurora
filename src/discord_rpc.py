@@ -5,6 +5,7 @@ import time
 import threading
 import uuid
 from PyQt6.QtCore import QThread
+from src.logger import logger
 
 OP_HANDSHAKE = 0
 OP_FRAME     = 1
@@ -73,7 +74,7 @@ def _close_pipe(handle):
 class DiscordRPC(QThread):
     CID = "1505644188060876920"
 
-    def __init__(self, client_id: str = None, parent=None):
+    def __init__(self, client_id: str = "", parent=None):
         super().__init__(parent)
         self._client_id  = client_id or self.CID
         self._handle     = None
@@ -84,6 +85,17 @@ class DiscordRPC(QThread):
         self._pending_activity: dict | None = None
         self._start_timestamp = int(time.time())
 
+    def _get_buttons(self) -> list:
+        DISCORD_INVITE = "https://discord.gg/565jfeYsbp"
+        return [{
+                "label": "Join Discord Server",
+                "url": DISCORD_INVITE
+            },
+            {
+                "label": "Github",
+                "url": "https://github.com/Daturaxoxo/Aurora"
+            }]
+
     def set_idle(self):
         self._queue_activity({
             "state":   "Idle",
@@ -93,6 +105,7 @@ class DiscordRPC(QThread):
                 "large_image": "aurora_logo",
                 "large_text":  "Aurora Mod Launcher",
             },
+            "buttons": self._get_buttons()
         })
 
     def set_launching(self):
@@ -104,6 +117,7 @@ class DiscordRPC(QThread):
                 "large_image": "aurora_logo",
                 "large_text":  "Aurora Mod Launcher",
             },
+            "buttons": self._get_buttons()
         })
 
     def set_in_game(self):
@@ -117,6 +131,7 @@ class DiscordRPC(QThread):
                 "small_image": "playing",
                 "small_text":  "In-game",
             },
+            "buttons": self._get_buttons()
         })
 
     def stop(self):
@@ -146,8 +161,7 @@ class DiscordRPC(QThread):
             _write_pipe(self._handle, _encode(OP_FRAME, payload))
             _decode(self._handle)
         except Exception as e:
-            from src.logger import logger
-            logger.warning(f"[RPC] Failed to send activity: {e}")
+            logger.warning(f"[RPC] Failed to send activity: {e}", extra={'el': True})
             self._connected = False
 
     def _clear_presence(self):
@@ -174,19 +188,15 @@ class DiscordRPC(QThread):
             resp = _decode(self._handle)
             if resp.get("cmd") == "DISPATCH" and resp.get("evt") == "READY":
                 self._connected = True
-                from src.logger import logger
-                logger.info("[RPC] Connected to Discord.")
+                logger.info("[RPC] Connected to Discord.", extra={'el': True})
                 return True
         except Exception as e:
-            from src.logger import logger
-            logger.warning(f"[RPC] Connection failed: {e}")
+            logger.warning(f"[RPC] Connection failed: {e}", extra={'el': True})
         return False
 
     # QThread entry point
 
     def run(self):
-        from src.logger import logger
-
         while not self._stop_event.is_set():
             if not self._connected:
                 if not self._connect():
@@ -215,4 +225,4 @@ class DiscordRPC(QThread):
                 pass
             _close_pipe(self._handle)
             self._handle = None
-        logger.info("[RPC] Disconnected.")
+        logger.info("[RPC] Disconnected.", extra={'el': True})
