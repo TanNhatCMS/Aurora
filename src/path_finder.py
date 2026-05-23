@@ -3,7 +3,6 @@ import sys
 import json
 from pathlib import Path
 
-from scandir_rs import Scandir
 
 def get_app_dir():
     if getattr(sys, 'frozen', False):
